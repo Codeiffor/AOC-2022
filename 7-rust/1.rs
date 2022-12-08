@@ -47,12 +47,20 @@ fn main() {
       size.insert(parent[dir].to_string(), size[&parent[dir]] + size[dir]);
     }
   }
-  
-  let mut sum = 0i64;
+ 
+  let mut ans1 = 0i64;
+  let mut ans2 = 70_000_000;
+  let tot_size = size["/"];
+  let size_required = tot_size - 40_000_000;
+
   for (_, s) in size {
     if s <= 100_000 {
-      sum += s;
+      ans1 += s;
+    }
+    if s >= size_required && s < ans2 {
+      ans2 = s;
     }
   }
-  println!("sum={}", sum);
+  println!("ans1={}", ans1);
+  println!("ans2={}", ans2);
 }
