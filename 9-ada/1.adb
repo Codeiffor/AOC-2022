@@ -7,6 +7,7 @@ procedure Main is
         I : Integer;
         J : Integer;
     end record;
+    type Point_Array is array (0 .. 9) of Point;
 
     procedure Print_Point (P : Point) is
     begin
@@ -31,52 +32,58 @@ procedure Main is
     end Parse_Line;
 
     procedure Update_Position
-       (Direction : Character; Head : in out Point; Tail : in out Point)
+       (Direction : Character; Rope : in out Point_Array)
     is
         I_Diff : Integer;
         J_Diff : Integer;
     begin
         -- update head
         if Direction = 'R' then
-            Head.I := Head.I + 1;
+            Rope (0).I := Rope (0).I + 1;
         elsif Direction = 'L' then
-            Head.I := Head.I - 1;
+            Rope (0).I := Rope (0).I - 1;
         elsif Direction = 'U' then
-            Head.J := Head.J + 1;
+            Rope (0).J := Rope (0).J + 1;
         elsif Direction = 'D' then
-            Head.J := Head.J - 1;
+            Rope (0).J := Rope (0).J - 1;
         end if;
-        -- update tail
-        I_Diff := Head.I - Tail.I;
-        J_Diff := Head.J - Tail.J;
-        if (I_Diff = 0 and abs J_Diff = 2) or (abs I_Diff = 2 and J_Diff = 0)
-        then
-            Tail.I := Tail.I + I_Diff / 2;
-            Tail.J := Tail.J + J_Diff / 2;
-        end if;
-        if abs I_Diff + abs J_Diff = 3 then
-            Tail.I := Tail.I + I_Diff / abs I_Diff;
-            Tail.J := Tail.J + J_Diff / abs J_Diff;
-        end if;
+        -- update rope
+        for K in 1 .. 9 loop
+            I_Diff := Rope (K - 1).I - Rope (K).I;
+            J_Diff := Rope (K - 1).J - Rope (K).J;
+            if (I_Diff = 0 and abs J_Diff = 2) or
+               (abs I_Diff = 2 and J_Diff = 0)
+            then
+                Rope (K).I := Rope (K).I + I_Diff / 2;
+                Rope (K).J := Rope (K).J + J_Diff / 2;
+            end if;
+            if abs I_Diff + abs J_Diff > 2 then
+                Rope (K).I := Rope (K).I + I_Diff / abs I_Diff;
+                Rope (K).J := Rope (K).J + J_Diff / abs J_Diff;
+            end if;
+        end loop;
     end Update_Position;
 
     File      : File_Type;
     Direction : Character;
     Steps     : Integer;
-    Visited   : Point_Set.Set;
-    Head      : Point := (I => 0, J => 0);
-    Tail      : Point := (I => 0, J => 0);
+    Visited1  : Point_Set.Set;
+    Visited2  : Point_Set.Set;
+    Rope      : Point_Array := (others => (I => 0, J => 0));
 begin
-    Visited.Include (Tail);
+    Visited1.Include (Rope (1));
+    Visited2.Include (Rope (9));
     Open (File => File, Mode => In_File, Name => "input.txt");
     while not End_Of_File (File) loop
         Parse_Line (File, Direction, Steps);
-        for i in 1 .. Steps loop
-            Update_Position (Direction, Head, Tail);
-            --  Print_Point(Tail);
-            Visited.Include (Tail);
+        for I in 1 .. Steps loop
+            Update_Position (Direction, Rope);
+            --  Print_Point(Rope(9));
+            Visited1.Include (Rope (1));
+            Visited2.Include (Rope (9));
         end loop;
     end loop;
-    Put (Visited.Length'Image);
+    Put_Line ("part 1:" & Visited1.Length'Image);
+    Put_Line ("part 2:" & Visited2.Length'Image);
     Close (File);
 end Main;
