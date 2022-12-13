@@ -18,7 +18,6 @@
 
 (defun parse (line c)
   (if (= 0 (mod c 7))
-    ;; (setf (aref monkey 0) (parse-integer (substring line 7 (- (length line) 1)))))
     (setf (aref monkey 0) 0))
   (if (= 1 (mod c 7))
     (setf (aref monkey 1) (parse-list (substring line 18))))
@@ -47,14 +46,19 @@
 
 ;; main logic
 
-(defun simulate_round ()
+(setf mul 1)
+(loop for monkey across monkeys do
+  (setf mul (* mul (aref monkey 4))))
+
+(defun simulate_round (divide_by_3)
   (loop for i from 0 and monkey across monkeys do
     (loop for item in (reverse (aref monkey 1)) do
       (setf (aref (aref monkeys i) 0) (+ 1 (aref monkey 0)))
       (if (string= "*" (aref monkey 2)) (setf item (* item (aref monkey 3))))
       (if (string= "+" (aref monkey 2)) (setf item (+ item (aref monkey 3))))
       (if (string= "^" (aref monkey 2)) (setf item (* item item)))
-      (setf item (floor item 3))
+      (if divide_by_3 (setf item (floor item 3)))
+      (setf item (mod item mul))
       (if (= (mod item (aref monkey 4)) 0)
         (setf m (aref monkey 5))
         (setf m (aref monkey 6)))
@@ -63,14 +67,18 @@
       (setf (aref (aref monkeys i) 1)
         (cdr (reverse (aref monkey 1)))))))
 
-(loop for i from 1 to 20 do (simulate_round))
-;; (print monkeys)
+(defun print_max ()
+  (setf m1 0)
+  (setf m2 0)
+  (defun update_max (c)
+    (if (> c m1) (progn (setf m2 m1) (setf m1 c))
+      (if (> c m2) (setf m2 c))))
+  (loop for monkey across monkeys do
+    (update_max (aref monkey 0)))
+  (print (* m1 m2)))
 
-(setf m1 0)
-(setf m2 0)
-(defun update_max (c)
-  (if (> c m1) (progn (setf m2 m1) (setf m1 c))
-    (if (> c m2) (setf m2 c))))
-(loop for monkey across monkeys do
-  (update_max (aref monkey 0)))
-(print (* m1 m2))
+;; run 1 at a time
+;; (loop for i from 1 to 20 do (simulate_round t))
+(loop for i from 1 to 10000 do (simulate_round (not t)))
+
+(print_max)
