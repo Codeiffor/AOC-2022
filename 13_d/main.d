@@ -62,8 +62,12 @@ bool comparePair(string s1, string s2) {
 void main () {
   char[] buf;
   string s1;
+  string[] packets;
   int idxSum = 0, lineCount = 0;
   while(stdin.readln(buf)) {
+    if (lineCount % 3 < 2) {
+      packets ~= to!string(buf);
+    }
     if (lineCount % 3 == 0) {
       s1 = to!string(buf);
     }
@@ -75,5 +79,16 @@ void main () {
     }
     lineCount ++; 
   }
-  writeln(idxSum);
+  writeln("part 1: ", idxSum);
+
+  packets ~= "[[2]]";
+  packets ~= "[[6]]";
+  packets.sort!(comparePair);
+  int decoderKey = 1;
+  foreach (idx, packet; packets) {
+    if (packet == "[[2]]" || packet == "[[6]]") {
+      decoderKey *= idx + 1;
+    }
+  }
+  writeln("part 2: ", decoderKey);
 }
